@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@react-native-community/masked-view": "^0.1.10",
-    "@react-navigation/native": "^5.7.1",
+    "@react-navigation/native": "^5.7.2",
+    "@react-navigation/stack": "^5.8.0",
     "axios": "^0.19.2",
     "react": "16.13.1",
     "react-native": "0.63.2",
@@ -21,7 +22,7 @@
     "react-native-reanimated": "^1.10.1",
     "react-native-safe-area-context": "^3.1.1",
     "react-native-screens": "^2.9.0",
-    "react-native-slider": "^0.11.0",
+    "react-native-slider": "https://github.com/GuilhermeDaniluski/react-native-slider",
     "react-native-vector-icons": "^7.0.0"
   },
   "devDependencies": {

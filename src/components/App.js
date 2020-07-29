@@ -1,13 +1,6 @@
-import React, { useState } from 'react';
-import Welcome from './welcome';
+import React, { useState } from 'react'
+import Navigation from './Navigation'
 
 export default function App() {
-
-  return (
-    <Welcome
-      text01="Congregação Cristã no Brasil"
-      text02="Mesa de som"
-    />
-  );
-
+  return <Navigation/>
 }
