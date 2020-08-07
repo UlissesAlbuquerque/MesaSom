@@ -1,26 +1,145 @@
-import React from 'react'
-import { View } from 'react-native'
-import SliderLib from 'react-native-slider'
+import React, { useState, useEffect } from 'react'
 
-// import { Container } from './styles';
+import { Container, Indicator, Trail } from './styles'
+import { PanGestureHandler, State } from 'react-native-gesture-handler'
 
-const Slider = () => {
+import PropTypes from 'prop-types'
+
+import Animated, { Value } from 'react-native-reanimated'
+
+const Slider = ({
+  style,
+  indicatorProps,
+  value,
+  minValue,
+  maxValue,
+  onValueChange,
+  trailProps,
+}) => {
+  const { size } = indicatorProps
+  const panSize = size + 20
+  const offset = panSize / 2
+  const [currentValue, setCurrentValue] = useState(value)
+  const [indicatorPosition, setIndicatorPosition] = useState(0)
+  const [containerHeight, setContainerHeight] = useState(0)
+  const [translateY, setTranslateY] = useState(new Value(0))
+  const calcNewPosition = createRemap(minValue, maxValue, 0, containerHeight)
+  const calcNewValue = createRemap(0, containerHeight, minValue, maxValue)
+
+  const handleHeightChange = (event) => {
+    const { height } = event.nativeEvent.layout
+    if (height) {
+      setContainerHeight(height)
+    }
+  }
+
+  const handlePanGestureEvent = (event) => {
+    if (event.nativeEvent.state == State.ACTIVE) {
+      let { translationY } = event.nativeEvent
+
+      let newPos = indicatorPosition + translationY * -1
+      let clampedPosition = clamp(newPos + offset, 0, containerHeight)
+      handleNewPosition(clampedPosition)
+      let newTranslation = (clampedPosition - (indicatorPosition + offset)) / -1
+      setTranslateY(newTranslation)
+    }
+  }
+
+  const handlePanGestureState = ({ nativeEvent }) => {
+    setTranslateY(0)
+    if (nativeEvent.state == State.END) {
+      setIndicatorPosition(indicatorPosition + translateY * -1)
+    }
+  }
+
+  const handleNewPosition = (newPos) => {
+    if (newPos !== null && newPos !== undefined) {
+      let newValue = calcNewValue(newPos)
+      if (!Number.isNaN(newValue) && Number.isFinite(newValue)) {
+        setCurrentValue(newValue)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (value !== null && value !== undefined) {
+      if (value >= minValue && value <= maxValue) {
+        let newPosition = calcNewPosition(value)
+        setTranslateY(0)
+        setIndicatorPosition(newPosition - offset)
+      }
+    }
+  }, [value])
+
+  useEffect(() => {
+    handleNewPosition(indicatorPosition + offset)
+  }, [indicatorPosition])
+
+  useEffect(() => {
+    onValueChange(currentValue)
+  }, [currentValue])
+
   return (
-    <SliderLib
-      style={{
-        width: 200,
-        height: 40,
-      }}
-      orientation='vertical'
-      minimumValue={0}
-      maximumValue={255}
-      minimumTrackTintColor="#FFFFFF"
-      maximumTrackTintColor="#000000"
-      onValueChange={(value) => {
-        console.log(value)
-      }}
-    />
+    <Container style={style}>
+      <Trail onLayout={handleHeightChange} {...trailProps}>
+        <PanGestureHandler
+          onGestureEvent={handlePanGestureEvent}
+          onHandlerStateChange={handlePanGestureState}
+        >
+          <Animated.View
+            style={{
+              position: 'absolute',
+              bottom: indicatorPosition,
+              width: panSize,
+              height: panSize,
+              alignSelf: 'center',
+              display: 'flex',
+              justifyContent: 'center',
+              transform: [{ translateY }],
+            }}
+          >
+            <Indicator {...indicatorProps} />
+          </Animated.View>
+        </PanGestureHandler>
+      </Trail>
+    </Container>
   )
 }
+
+/**
+ * Create a function that maps a value to a range
+ * @param  {Number}   inMin    Input range minimum value
+ * @param  {Number}   inMax    Input range maximum value
+ * @param  {Number}   outMin   Output range minimum value
+ * @param  {Number}   outMax   Output range maximum value
+ * @return {function}          A function that converts a value to a range
+ */
+function createRemap(inMin, inMax, outMin, outMax) {
+  return function remaper(x) {
+    // return clamp(((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin,outMin, outMax)
+    return ((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
+  }
+}
+
+/**
+ * Create a function that maps a value to a range
+ * @param  {Number}   number    Input range minimum value
+ * @param  {Number}   min    Input range maximum value
+ * @param  {Number}   max   Output range minimum value
+ * @return {function}  A function that clamps a value between a range
+ */
+function clamp(number, min, max) {
+  return Math.max(min, Math.min(number, max))
+}
+
+Slider.defaultProps = {
+  indicatorProps: {
+    size: 30,
+  },
+  minValue: -255,
+  maxValue: 255,
+  onValueChange: () => {},
+}
+
 
 export default Slider
