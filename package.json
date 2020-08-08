@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "android": "react-native run-android",
+    "android": "adb reverse tcp:9090 tcp:9090 && react-native run-android",
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
@@ -11,6 +11,7 @@
     "clean": "cd android && gradlew clean && cd .."
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.11.0",
     "@react-native-community/masked-view": "^0.1.10",
     "@react-navigation/native": "^5.7.2",
     "@react-navigation/stack": "^5.8.0",
@@ -24,6 +25,7 @@
     "react-native-safe-area-context": "^3.1.1",
     "react-native-screens": "^2.9.0",
     "react-native-vector-icons": "^7.0.0",
+    "reactotron-react-native": "^5.0.0",
     "styled-components": "^5.1.1"
   },
   "devDependencies": {

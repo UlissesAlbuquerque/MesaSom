@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect,useLayoutEffect  } from 'react'
 
 import { Container, Indicator, Trail } from './styles'
 import { PanGestureHandler, State } from 'react-native-gesture-handler'
@@ -6,25 +6,35 @@ import { PanGestureHandler, State } from 'react-native-gesture-handler'
 import PropTypes from 'prop-types'
 
 import Animated, { Value } from 'react-native-reanimated'
+import reactotron from 'reactotron-react-native'
 
 const Slider = ({
   style,
   indicatorProps,
-  value,
+  initialValue,
   minValue,
   maxValue,
   onValueChange,
   trailProps,
 }) => {
+
+  
   const { size } = indicatorProps
   const panSize = size + 20
   const offset = panSize / 2
-  const [currentValue, setCurrentValue] = useState(value)
+  const [currentValue, setCurrentValue] = useState(0)
   const [indicatorPosition, setIndicatorPosition] = useState(0)
   const [containerHeight, setContainerHeight] = useState(0)
   const [translateY, setTranslateY] = useState(new Value(0))
-  const calcNewPosition = createRemap(minValue, maxValue, 0, containerHeight)
-  const calcNewValue = createRemap(0, containerHeight, minValue, maxValue)
+
+
+  // const calcNewPosition = createRemap(minValue, maxValue, 0, containerHeight)
+  // const calcNewValue = createRemap(0, containerHeight, minValue, maxValue)
+
+
+  const remap = (x,inMin, inMax, outMin, outMax) =>{
+    return ((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
+  }
 
   const handleHeightChange = (event) => {
     const { height } = event.nativeEvent.layout
@@ -54,22 +64,26 @@ const Slider = ({
 
   const handleNewPosition = (newPos) => {
     if (newPos !== null && newPos !== undefined) {
-      let newValue = calcNewValue(newPos)
+      let newValue = remap(newPos,0, containerHeight, minValue, maxValue)
       if (!Number.isNaN(newValue) && Number.isFinite(newValue)) {
         setCurrentValue(newValue)
       }
     }
   }
 
-  useEffect(() => {
-    if (value !== null && value !== undefined) {
-      if (value >= minValue && value <= maxValue) {
-        let newPosition = calcNewPosition(value)
+  useLayoutEffect(() => {
+    if (initialValue !== null && initialValue !== undefined) {
+      if (initialValue >= minValue && initialValue <= maxValue) {
+        reactotron.log(initialValue)
+        let newPosition = remap(initialValue, minValue, maxValue, 0, containerHeight)
+        reactotron.log(containerHeight)
         setTranslateY(0)
         setIndicatorPosition(newPosition - offset)
+        // reactotron.log(newPosition)
+
       }
     }
-  }, [value])
+  }, [initialValue])
 
   useEffect(() => {
     handleNewPosition(indicatorPosition + offset)
@@ -78,6 +92,10 @@ const Slider = ({
   useEffect(() => {
     onValueChange(currentValue)
   }, [currentValue])
+
+  useEffect(() => {
+
+  }, [])
 
   return (
     <Container style={style}>
@@ -117,7 +135,7 @@ const Slider = ({
 function createRemap(inMin, inMax, outMin, outMax) {
   return function remaper(x) {
     // return clamp(((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin,outMin, outMax)
-    return ((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
+    
   }
 }
 
@@ -136,7 +154,7 @@ Slider.defaultProps = {
   indicatorProps: {
     size: 30,
   },
-  minValue: -255,
+  minValue: 0,
   maxValue: 255,
   onValueChange: () => {},
 }
