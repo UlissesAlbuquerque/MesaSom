@@ -27,11 +27,6 @@ const Slider = ({
   const [containerHeight, setContainerHeight] = useState(0)
   const [translateY, setTranslateY] = useState(new Value(0))
 
-
-  // const calcNewPosition = createRemap(minValue, maxValue, 0, containerHeight)
-  // const calcNewValue = createRemap(0, containerHeight, minValue, maxValue)
-
-
   const remap = (x,inMin, inMax, outMin, outMax) =>{
     return ((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
   }
@@ -74,16 +69,12 @@ const Slider = ({
   useLayoutEffect(() => {
     if (initialValue !== null && initialValue !== undefined) {
       if (initialValue >= minValue && initialValue <= maxValue) {
-        reactotron.log(initialValue)
         let newPosition = remap(initialValue, minValue, maxValue, 0, containerHeight)
-        reactotron.log(containerHeight)
         setTranslateY(0)
         setIndicatorPosition(newPosition - offset)
-        // reactotron.log(newPosition)
-
       }
     }
-  }, [initialValue])
+  }, [initialValue, containerHeight])
 
   useEffect(() => {
     handleNewPosition(indicatorPosition + offset)

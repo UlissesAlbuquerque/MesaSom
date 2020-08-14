@@ -1,55 +1,72 @@
 import React, { useState, useEffect } from 'react'
-import { View, Text, StyleSheet, Button } from 'react-native'
+import { View, Text, StyleSheet, Button, ScrollView, ActivityIndicator } from 'react-native'
 
 import styles from './styles'
 import Slider from '../Slider'
 import reactotron from 'reactotron-react-native'
-import { getChannels } from '../../services/channels'
+import { getChannels, postChannels } from '../../services/channels'
+import lodash from 'lodash'
 
 const Welcome = () => {
-  const [channels, setChannels] = useState({})
-  
+  const [channels, setChannels] = useState(null)
 
-
-  const handleSlideValueChange = (value) =>{
-    console.log(value);
+  const handleSlideValueChange = (value, channel) => {
+    let newChannels = channels
+    newChannels[channel] = parseInt(value)
+    setChannels(newChannels)
+    handlePostChannels(newChannels)
   }
 
+  const debouncedValueChange = lodash.debounce(handleSlideValueChange, 100)
 
-  const handleGetChannels = async() => {
+  const handleGetChannels = async () => {
     let response = await getChannels()
     setChannels(response)
+  }
 
-    // let arrayOfChannels = Object.keys(channels)
-    // reactotron.log(arrayOfChannels)
-    // arrayOfChannels.map(propertie =>{
-    //   return <Slider/>
-    // })
-
-
+  const handlePostChannels = async (newChannels) => {
+    let response = await postChannels(newChannels)
   }
 
 
   useEffect(() => {
     handleGetChannels()
-
   }, [])
 
+  if (!channels) {
+    return <View style={{
+      flex:1,
+      display:'flex',
+      flexDirection:'column',
+      justifyContent:'center',
+      alignItems:'center'
+    }}>
+      <ActivityIndicator size="large" color={'blue'}/>
+      <Text>Loading</Text>
+    </View>
+  }
 
   return (
-    <View style={{display:'flex', flex:1, padding:50, flexDirection:'row'}}>
-     {Object.keys(channels).map((channel,index) =>{
-       reactotron.log('Welcome',channels[channel])
-       return <Slider key={index} initialValue={channels[channel]} />
-     })}
-
-      {/* <Slider initialValue={-255}/> */}
-      <Button 
-      title='Teste'
-      onPress={()=>{
-        handleGetChannels()
-      }}><Text>Teste</Text></Button>
-    </View>
+    <ScrollView
+      horizontal={true}
+      contentContainerStyle={{
+        display: 'flex',
+        flexGrow: 1,
+        padding: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      {Object.keys(channels).map((channel, index) => {
+        return (
+          <Slider
+            key={index}
+            onValueChange={(value) => debouncedValueChange(value, channel)}
+            initialValue={channels[channel]}
+          />
+        )
+      })}
+    </ScrollView>
   )
 }
 
