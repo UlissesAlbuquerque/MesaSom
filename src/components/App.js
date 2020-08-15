@@ -1,3 +1,5 @@
+// Inicia navegação
+
 import React, { useState } from 'react'
 import Navigation from './Navigation'
 

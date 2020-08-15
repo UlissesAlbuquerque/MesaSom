@@ -1,4 +1,5 @@
-import React, { useState, useEffect,useLayoutEffect  } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
+import { View, Text } from 'react-native'
 
 import { Container, Indicator, Trail } from './styles'
 import { PanGestureHandler, State } from 'react-native-gesture-handler'
@@ -16,9 +17,10 @@ const Slider = ({
   maxValue,
   onValueChange,
   trailProps,
+  chName,
 }) => {
 
-  
+
   const { size } = indicatorProps
   const panSize = size + 20
   const offset = panSize / 2
@@ -27,7 +29,7 @@ const Slider = ({
   const [containerHeight, setContainerHeight] = useState(0)
   const [translateY, setTranslateY] = useState(new Value(0))
 
-  const remap = (x,inMin, inMax, outMin, outMax) =>{
+  const remap = (x, inMin, inMax, outMin, outMax) => {
     return ((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin
   }
 
@@ -59,7 +61,7 @@ const Slider = ({
 
   const handleNewPosition = (newPos) => {
     if (newPos !== null && newPos !== undefined) {
-      let newValue = remap(newPos,0, containerHeight, minValue, maxValue)
+      let newValue = remap(newPos, 0, containerHeight, minValue, maxValue)
       if (!Number.isNaN(newValue) && Number.isFinite(newValue)) {
         setCurrentValue(newValue)
       }
@@ -111,10 +113,12 @@ const Slider = ({
           </Animated.View>
         </PanGestureHandler>
       </Trail>
+      <View style={{top:15}}><Text style={{fontWeight:'bold', color:'#222d32'}}>{chName}</Text></View>
     </Container>
   )
 }
 
+// Escalonamento do tamanho do Slider
 /**
  * Create a function that maps a value to a range
  * @param  {Number}   inMin    Input range minimum value
@@ -126,7 +130,7 @@ const Slider = ({
 function createRemap(inMin, inMax, outMin, outMax) {
   return function remaper(x) {
     // return clamp(((x - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin,outMin, outMax)
-    
+
   }
 }
 
@@ -141,13 +145,14 @@ function clamp(number, min, max) {
   return Math.max(min, Math.min(number, max))
 }
 
+// Estilo do Slider
 Slider.defaultProps = {
   indicatorProps: {
-    size: 30,
+    size: 50,
   },
   minValue: 0,
   maxValue: 255,
-  onValueChange: () => {},
+  onValueChange: () => { },
 }
 
 
